@@ -8,6 +8,7 @@ class Sight : public Figure
 public:
 	Sight(int size=12, int offsetX=100, int offsetY=100) : Figure(size, offsetX, offsetY)
 	{
+		
 	}
 	void Draw(HDC dc)
 	{

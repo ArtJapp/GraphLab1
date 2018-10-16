@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include "Sight.h"
+#include "Another.h"
 #include <iostream>
 
 LRESULT _stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);						// прототип оконной процедуры
@@ -43,10 +44,12 @@ int _stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 // В основном модуле объявляется только одна глобальная переменная - создаётся объект класса Sight
 // Все дальнейшие действия осуществляются посредством обращения к методам, реализованным в этом классе
-Sight sight(30);
+Another sight(30);
 
 LRESULT _stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)		// оконная процедура принимает и обрабатывает все сообщения, отправленные окну
 {
+	HDC dc = GetDC(hWnd);
+	sight.setColor(dc, RGB(12, 200, 12));
 	switch(msg)
 	{
 	case WM_PAINT:						// системное сообщение WM_PAINT генерируется всякий раз, когда требуется отрисовка или перерисовка изображения
@@ -98,12 +101,33 @@ LRESULT _stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)		// 
 		}
 	case WM_LBUTTONDOWN:
 		{
-			sight.StartDragging(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			HDC dc = GetDC(hWnd);
+			sight.StartDragging(dc, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			return 0;
 		}
 	case WM_MOUSEWHEEL: 
 		{
-	
+		if (GetKeyState(VK_CONTROL) & 0x8000)
+		{
+			POINT P;
+			P.x = GET_X_LPARAM(lParam);
+			P.y = GET_Y_LPARAM(lParam);
+			ScreenToClient(hWnd, &P);
+			if (sight.InnerPoint(P.x, P.y)) {
+				if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+				{
+					sight.IncreaseSize();
+
+				}
+				else {
+					sight.DecreaseSize();
+				}
+				InvalidateRect(hWnd, nullptr, false);
+			}
+			
+		}
+
+		return 0;
 		}
 	case WM_MOUSEMOVE:
 		{
